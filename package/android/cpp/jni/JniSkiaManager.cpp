@@ -7,6 +7,7 @@
 
 #include "JniSkiaDrawView.h"
 #include <RNSkManager.h>
+#include "JsiSkSurface.h"
 
 #include <GLES3/gl3.h>
 
@@ -85,11 +86,15 @@ void JniSkiaManager::MakeOffscreenSurface() {
 
     GrBackendRenderTarget _skRenderTarget(width, height, samples, stencil, fbInfo);
 
-
-    sk_sp<SkSurface> _skSurface = SkSurface::MakeFromBackendRenderTarget(
+    sk_sp<SkSurface> surface = SkSurface::MakeFromBackendRenderTarget(
         dContext.get(), _skRenderTarget,
         kBottomLeft_GrSurfaceOrigin, kRGBA_8888_SkColorType, nullptr, nullptr);
-  //return surface;
+    assert(surface != nullptr);
+    auto jsiSurface = jsi::Object::createFromHostObject(
+        *_jsRuntime,
+        std::make_shared<JsiSkSurface>(_context, std::move(surface))
+    );
+    _jsRuntime->global().setProperty(*_jsRuntime, "Surface", jsiSurface);
 }
 
 } // namespace RNSkia

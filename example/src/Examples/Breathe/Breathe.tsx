@@ -1,7 +1,8 @@
 import React, { useMemo } from "react";
 import { StyleSheet, useWindowDimensions } from "react-native";
-import type { SkiaValue } from "@shopify/react-native-skia";
+import type { SkiaValue, SkSurface } from "@shopify/react-native-skia";
 import {
+  Skia,
   useComputedValue,
   useLoop,
   BlurMask,
@@ -53,6 +54,13 @@ const Ring = ({ index, progress }: RingProps) => {
 };
 
 export const Breathe = () => {
+  const surface = global.Surface as SkSurface;
+  const canvas = surface.getCanvas();
+  // const paint = Skia.Paint();
+  // paint.setColor(Skia.Color("red"));
+  // canvas.drawCircle(100, 100, 100, paint);
+  // const img = surface.makeImageSnapshot();
+  // console.log({ img });
   const { width, height } = useWindowDimensions();
   const center = useMemo(
     () => vec(width / 2, height / 2 - 64),
