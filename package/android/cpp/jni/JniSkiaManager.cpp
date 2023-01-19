@@ -59,32 +59,36 @@ struct ColorSettings {
 void JniSkiaManager::MakeOffscreenSurface() {
     int width = 100;
     int height = 100;
+
     // setup interface
-    // auto interface = GrGLMakeNativeInterface();
-    // // setup context
-    // sk_sp<GrDirectContext> dContext = GrDirectContext::MakeGL(interface);
-    // glViewport(0, 0, width, height);
+    auto interface = GrGLMakeNativeInterface();
+    // setup context
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glClearColor(0, 0, 0, 0);
+    glClearStencil(0);
+    glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+    sk_sp<GrDirectContext> dContext = GrDirectContext::MakeGL(interface);
+    //dContext->resetContext(kRenderTarget_GrGLBackendState | kMisc_GrGLBackendState);
 
-    // GLint buffer;
-    // glGetIntegerv(GL_FRAMEBUFFER_BINDING, &buffer);
+    GLint buffer;
+    glGetIntegerv(GL_FRAMEBUFFER_BINDING, &buffer);
 
-    // GLint stencil;
-    // glGetIntegerv(GL_STENCIL_BITS, &stencil);
+    GLint stencil;
+    glGetIntegerv(GL_STENCIL_BITS, &stencil);
 
-    // GLint samples;
-    // glGetIntegerv(GL_SAMPLES, &samples);
+    GLint samples;
+    glGetIntegerv(GL_SAMPLES, &samples);
 
-    // GrGLFramebufferInfo fbInfo;
-    // fbInfo.fFBOID = buffer;
-    // fbInfo.fFormat = 0x8058;
+    GrGLFramebufferInfo fbInfo;
+    fbInfo.fFBOID = buffer;
+    fbInfo.fFormat = 0x8058;
 
-    // GrBackendRenderTarget _skRenderTarget(width, height, samples, stencil, fbInfo);
+    GrBackendRenderTarget _skRenderTarget(width, height, samples, stencil, fbInfo);
 
 
-    // dContext->resetContext(kRenderTarget_GrGLBackendState | kMisc_GrGLBackendState);
-    // sk_sp<SkSurface> _skSurface = SkSurface::MakeFromBackendRenderTarget(
-    //     dContext.get(), _skRenderTarget,
-    //     kBottomLeft_GrSurfaceOrigin, kRGBA_8888_SkColorType, nullptr, nullptr);
+    sk_sp<SkSurface> _skSurface = SkSurface::MakeFromBackendRenderTarget(
+        dContext.get(), _skRenderTarget,
+        kBottomLeft_GrSurfaceOrigin, kRGBA_8888_SkColorType, nullptr, nullptr);
   //return surface;
 }
 
