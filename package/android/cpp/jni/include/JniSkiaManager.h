@@ -51,6 +51,7 @@ public:
   std::shared_ptr<RNSkAndroidPlatformContext> getPlatformContext() {
     return _context;
   }
+
   std::shared_ptr<RNSkManager> getSkiaManager() { return _skManager; }
 
   void invalidate() {
@@ -59,6 +60,8 @@ public:
     _skManager = nullptr;
     _context = nullptr;
   }
+
+  void MakeOffscreenSurface();
 
 private:
   friend HybridBase;

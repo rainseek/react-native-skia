@@ -71,6 +71,12 @@ public class RNSkiaModule extends ReactContextBaseJavaModule implements Lifecycl
         }
     }
 
+    @ReactMethod(isBlockingSynchronousMethod = true)
+    public boolean MakeOffscreenSurface() {
+        skiaManager.MakeOffscreenSurface();
+        return true;
+    }
+
     @Override
     public void onHostResume() {
         if(skiaManager != null) skiaManager.onHostResume();
