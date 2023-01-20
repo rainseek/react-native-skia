@@ -61,6 +61,8 @@ public:
    */
   void run(const std::function<void(SkCanvas *)> &cb, int width, int height);
 
+  void finish();
+
   /**
    * Sets the state to finishing. Next time the renderer will be called it
    * will tear down and release its resources. It is important that this

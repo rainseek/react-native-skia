@@ -64,14 +64,23 @@ void JniSkiaManager::MakeOffscreenSurface() {
 
   auto renderer = std::make_shared<SkiaOpenGLRenderer>();
   bool init = renderer->ensureInitialised();
-  assert(init);
   renderer->ensureSkiaSurface(width, height);
+  assert(init);
   auto surface = renderer->getSurface();
   assert(surface != nullptr);
+  auto canvas = surface->getCanvas();
+  canvas->drawColor(SK_ColorRED);
+  renderer->finish();
+  auto image = surface->makeImageSnapshot();
   auto jsiSurface = jsi::Object::createFromHostObject(
       *_jsRuntime,
       std::make_shared<JsiSkSurface>(_context, std::move(surface)));
+  auto jsiImage = jsi::Object::createFromHostObject(
+      *_jsRuntime,
+      std::make_shared<JsiSkImage>(_context, std::move(image)));
   _jsRuntime->global().setProperty(*_jsRuntime, "Surface", jsiSurface);
+  _jsRuntime->global().setProperty(*_jsRuntime, "Image", jsiImage);
+  
 }
 
 } // namespace RNSkia

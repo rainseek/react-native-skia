@@ -72,16 +72,10 @@ const HeaderLeft = (props: HeaderBackButtonProps) => {
   );
 };
 
-const surface = global.Surface as SkSurface;
-const canvas = surface.getCanvas();
-const paint = Skia.Paint();
-paint.setColor(Skia.Color("red"));
-canvas.drawCircle(100, 100, 100, paint);
-global.flush();
-const img = surface.makeImageSnapshot();
-console.log({ img: img.encodeToBase64() });
-
 const App = () => {
+  const surface = global.Surface as SkSurface;
+  const img = surface.makeImageSnapshot();
+  console.log({ img: img.encodeToBase64() });
   const Stack = createNativeStackNavigator<StackParamList>();
   const assets = useAssets();
   if (assets === null) {

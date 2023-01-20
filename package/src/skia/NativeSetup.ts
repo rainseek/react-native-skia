@@ -11,6 +11,8 @@ if (Platform.OS !== "web" && global.SkiaApi == null) {
   }
   const result = SkiaModule.install();
   const r = SkiaModule.MakeOffscreenSurface();
+  console.log({ r });
+  console.log({ Image: global.Image.encodeToBase64() });
   if (result !== true) {
     throw new Error(
       `Native Skia Module failed to correctly install JSI Bindings! Result: ${result}`

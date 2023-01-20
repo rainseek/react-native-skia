@@ -37,6 +37,8 @@ SkiaOpenGLRenderer::~SkiaOpenGLRenderer() {
 
 void SkiaOpenGLRenderer::run(const std::function<void(SkCanvas *)> &cb,
                              int width, int height) {
+
+      RNSkLogger::logToConsole("GO");
   switch (_renderState) {
   case RenderState::Initializing: {
     _renderState = RenderState::Rendering;
@@ -74,6 +76,8 @@ void SkiaOpenGLRenderer::run(const std::function<void(SkCanvas *)> &cb,
       if (!eglSwapBuffers(getThreadDrawingContext()->glDisplay, _glSurface)) {
         RNSkLogger::logToConsole("eglSwapBuffers failed: %d\n", eglGetError());
       }
+
+      RNSkLogger::logToConsole("DONE DRAWING");
     }
     break;
   }
@@ -120,6 +124,20 @@ bool SkiaOpenGLRenderer::ensureInitialised() {
 
 void SkiaOpenGLRenderer::teardown() { _renderState = RenderState::Finishing; }
 
+void SkiaOpenGLRenderer::finish() {
+
+      // Flush
+      SkPaint paint;
+      _skSurface->getCanvas()->drawCircle({100, 100}, 100, paint);
+      _skSurface->flushAndSubmit();
+
+      if (!eglSwapBuffers(getThreadDrawingContext()->glDisplay, _glSurface)) {
+        RNSkLogger::logToConsole("eglSwapBuffers failed: %d\n", eglGetError());
+      }
+
+      RNSkLogger::logToConsole("DONE DRAWING");
+}
+
 bool SkiaOpenGLRenderer::initStaticGLContext() {
   if (getThreadDrawingContext()->glContext != EGL_NO_CONTEXT) {
     return true;
@@ -141,7 +159,7 @@ bool SkiaOpenGLRenderer::initStaticGLContext() {
   EGLint att[] = {EGL_RENDERABLE_TYPE,
                   EGL_OPENGL_ES2_BIT,
                   EGL_SURFACE_TYPE,
-                  EGL_WINDOW_BIT,
+                  EGL_PBUFFER_BIT,
                   EGL_ALPHA_SIZE,
                   8,
                   EGL_BLUE_SIZE,
@@ -208,11 +226,18 @@ bool SkiaOpenGLRenderer::initGLSurface() {
   }
 
   // Create the opengl surface
+
+  static const EGLint kSurfaceAttribs[] = {
+            EGL_WIDTH, 100,
+            EGL_HEIGHT, 100,
+            EGL_NONE
+  };
+
   _glSurface =
       _nativeWindow == nullptr
           ? eglCreatePbufferSurface(getThreadDrawingContext()->glDisplay,
                                     getThreadDrawingContext()->glConfig,
-                                    nullptr)
+                                    kSurfaceAttribs)
           : eglCreateWindowSurface(getThreadDrawingContext()->glDisplay,
                                    getThreadDrawingContext()->glConfig,
                                    _nativeWindow, nullptr);
