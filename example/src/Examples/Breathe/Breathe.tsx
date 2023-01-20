@@ -14,6 +14,7 @@ import {
   polar2Canvas,
   Easing,
   mix,
+  Image,
 } from "@shopify/react-native-skia";
 
 const c1 = "#61bea2";
@@ -54,13 +55,6 @@ const Ring = ({ index, progress }: RingProps) => {
 };
 
 export const Breathe = () => {
-  const surface = global.Surface as SkSurface;
-  const canvas = surface.getCanvas();
-  // const paint = Skia.Paint();
-  // paint.setColor(Skia.Color("red"));
-  // canvas.drawCircle(100, 100, 100, paint);
-  // const img = surface.makeImageSnapshot();
-  // console.log({ img });
   const { width, height } = useWindowDimensions();
   const center = useMemo(
     () => vec(width / 2, height / 2 - 64),
@@ -80,12 +74,6 @@ export const Breathe = () => {
   return (
     <Canvas style={styles.container} debug>
       <Fill color="rgb(36,43,56)" />
-      <Group origin={center} transform={transform} blendMode="screen">
-        <BlurMask style="solid" blur={40} />
-        {new Array(6).fill(0).map((_, index) => {
-          return <Ring key={index} index={index} progress={progress} />;
-        })}
-      </Group>
     </Canvas>
   );
 };

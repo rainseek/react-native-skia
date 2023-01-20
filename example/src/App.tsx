@@ -5,6 +5,7 @@ import { StatusBar } from "react-native";
 import type { HeaderBackButtonProps } from "@react-navigation/elements";
 import { HeaderBackButton } from "@react-navigation/elements";
 import { FiberProvider } from "its-fine";
+import { Skia } from "@shopify/react-native-skia";
 
 import {
   AnimationExample,
@@ -70,6 +71,15 @@ const HeaderLeft = (props: HeaderBackButtonProps) => {
     />
   );
 };
+
+const surface = global.Surface as SkSurface;
+const canvas = surface.getCanvas();
+const paint = Skia.Paint();
+paint.setColor(Skia.Color("red"));
+canvas.drawCircle(100, 100, 100, paint);
+global.flush();
+const img = surface.makeImageSnapshot();
+console.log({ img: img.encodeToBase64() });
 
 const App = () => {
   const Stack = createNativeStackNavigator<StackParamList>();

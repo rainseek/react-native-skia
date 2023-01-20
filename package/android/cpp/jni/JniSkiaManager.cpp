@@ -6,8 +6,8 @@
 #include <utility>
 
 #include "JniSkiaDrawView.h"
-#include <RNSkManager.h>
 #include "JsiSkSurface.h"
+#include <RNSkManager.h>
 
 #include <GLES3/gl3.h>
 
@@ -21,7 +21,8 @@ void JniSkiaManager::registerNatives() {
       makeNativeMethod("initHybrid", JniSkiaManager::initHybrid),
       makeNativeMethod("initializeRuntime", JniSkiaManager::initializeRuntime),
       makeNativeMethod("invalidate", JniSkiaManager::invalidate),
-      makeNativeMethod("MakeOffscreenSurface", JniSkiaManager::MakeOffscreenSurface),
+      makeNativeMethod("MakeOffscreenSurface",
+                       JniSkiaManager::MakeOffscreenSurface),
   });
 }
 
@@ -44,57 +45,33 @@ void JniSkiaManager::initializeRuntime() {
 }
 
 struct ColorSettings {
-    ColorSettings(sk_sp<SkColorSpace> colorSpace) {
-        if (colorSpace == nullptr || colorSpace->isSRGB()) {
-            colorType = kRGBA_8888_SkColorType;
-            pixFormat = GL_RGBA8;
-        } else {
-            colorType = kRGBA_F16_SkColorType;
-            pixFormat = GL_RGBA16F;
-        }
-    };
-    SkColorType colorType;
-    GrGLenum pixFormat;
+  ColorSettings(sk_sp<SkColorSpace> colorSpace) {
+    if (colorSpace == nullptr || colorSpace->isSRGB()) {
+      colorType = kRGBA_8888_SkColorType;
+      pixFormat = GL_RGBA8;
+    } else {
+      colorType = kRGBA_F16_SkColorType;
+      pixFormat = GL_RGBA16F;
+    }
+  };
+  SkColorType colorType;
+  GrGLenum pixFormat;
 };
 
 void JniSkiaManager::MakeOffscreenSurface() {
-    int width = 100;
-    int height = 100;
+  int width = 100;
+  int height = 100;
 
-    // setup interface
-    auto interface = GrGLMakeNativeInterface();
-    // setup context
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    glClearColor(0, 0, 0, 0);
-    glClearStencil(0);
-    glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-    sk_sp<GrDirectContext> dContext = GrDirectContext::MakeGL(interface);
-    //dContext->resetContext(kRenderTarget_GrGLBackendState | kMisc_GrGLBackendState);
-
-    GLint buffer;
-    glGetIntegerv(GL_FRAMEBUFFER_BINDING, &buffer);
-
-    GLint stencil;
-    glGetIntegerv(GL_STENCIL_BITS, &stencil);
-
-    GLint samples;
-    glGetIntegerv(GL_SAMPLES, &samples);
-
-    GrGLFramebufferInfo fbInfo;
-    fbInfo.fFBOID = buffer;
-    fbInfo.fFormat = 0x8058;
-
-    GrBackendRenderTarget _skRenderTarget(width, height, samples, stencil, fbInfo);
-
-    sk_sp<SkSurface> surface = SkSurface::MakeFromBackendRenderTarget(
-        dContext.get(), _skRenderTarget,
-        kBottomLeft_GrSurfaceOrigin, kRGBA_8888_SkColorType, nullptr, nullptr);
-    assert(surface != nullptr);
-    auto jsiSurface = jsi::Object::createFromHostObject(
-        *_jsRuntime,
-        std::make_shared<JsiSkSurface>(_context, std::move(surface))
-    );
-    _jsRuntime->global().setProperty(*_jsRuntime, "Surface", jsiSurface);
+  auto renderer = std::make_shared<SkiaOpenGLRenderer>();
+  bool init = renderer->ensureInitialised();
+  assert(init);
+  renderer->ensureSkiaSurface(width, height);
+  auto surface = renderer->getSurface();
+  assert(surface != nullptr);
+  auto jsiSurface = jsi::Object::createFromHostObject(
+      *_jsRuntime,
+      std::make_shared<JsiSkSurface>(_context, std::move(surface)));
+  _jsRuntime->global().setProperty(*_jsRuntime, "Surface", jsiSurface);
 }
 
 } // namespace RNSkia

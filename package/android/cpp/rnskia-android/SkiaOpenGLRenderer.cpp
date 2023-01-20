@@ -20,6 +20,8 @@ SkiaOpenGLRenderer::getThreadDrawingContext() {
   return threadContexts.at(threadId);
 }
 
+SkiaOpenGLRenderer::SkiaOpenGLRenderer() {}
+
 SkiaOpenGLRenderer::SkiaOpenGLRenderer(jobject surface) {
   _nativeWindow =
       ANativeWindow_fromSurface(facebook::jni::Environment::current(), surface);
@@ -27,8 +29,10 @@ SkiaOpenGLRenderer::SkiaOpenGLRenderer(jobject surface) {
 
 SkiaOpenGLRenderer::~SkiaOpenGLRenderer() {
   // Release surface
-  ANativeWindow_release(_nativeWindow);
-  _nativeWindow = nullptr;
+  if (_nativeWindow != nullptr) {
+    ANativeWindow_release(_nativeWindow);
+    _nativeWindow = nullptr;
+  }
 }
 
 void SkiaOpenGLRenderer::run(const std::function<void(SkCanvas *)> &cb,
@@ -193,9 +197,6 @@ bool SkiaOpenGLRenderer::initStaticSkiaContext() {
 }
 
 bool SkiaOpenGLRenderer::initGLSurface() {
-  if (_nativeWindow == nullptr) {
-    return false;
-  }
 
   if (_glSurface != EGL_NO_SURFACE) {
     if (!eglMakeCurrent(getThreadDrawingContext()->glDisplay, _glSurface,
@@ -207,9 +208,14 @@ bool SkiaOpenGLRenderer::initGLSurface() {
   }
 
   // Create the opengl surface
-  _glSurface = eglCreateWindowSurface(getThreadDrawingContext()->glDisplay,
-                                      getThreadDrawingContext()->glConfig,
-                                      _nativeWindow, nullptr);
+  _glSurface =
+      _nativeWindow == nullptr
+          ? eglCreatePbufferSurface(getThreadDrawingContext()->glDisplay,
+                                    getThreadDrawingContext()->glConfig,
+                                    nullptr)
+          : eglCreateWindowSurface(getThreadDrawingContext()->glDisplay,
+                                   getThreadDrawingContext()->glConfig,
+                                   _nativeWindow, nullptr);
 
   if (_glSurface == EGL_NO_SURFACE) {
     RNSkLogger::logToConsole("eglCreateWindowSurface failed: %d\n",

@@ -46,6 +46,7 @@ enum RenderState : int {
 
 class SkiaOpenGLRenderer {
 public:
+  explicit SkiaOpenGLRenderer();
   explicit SkiaOpenGLRenderer(jobject surface);
   ~SkiaOpenGLRenderer();
 
@@ -71,12 +72,26 @@ public:
    */
   void teardown();
 
-private:
   /**
    * Initializes all required OpenGL and Skia objects
    * @return True if initialization went well.
    */
   bool ensureInitialised();
+
+  /**
+   * Ensures that we have a valid Skia surface to draw to. The surface will
+   * be recreated if the width/height change.
+   * @param width Width of the underlying view
+   * @param height Height of the underlying view
+   * @return True if initialization went well
+   */
+  bool ensureSkiaSurface(int width, int height);
+
+  sk_sp<SkSurface> getSurface() {
+    return _skSurface;
+  }
+
+private:
 
   /**
    * Initializes the static OpenGL context that is shared between
@@ -99,15 +114,6 @@ private:
    * @return True if initialization went well
    */
   bool initGLSurface();
-
-  /**
-   * Ensures that we have a valid Skia surface to draw to. The surface will
-   * be recreated if the width/height change.
-   * @param width Width of the underlying view
-   * @param height Height of the underlying view
-   * @return True if initialization went well
-   */
-  bool ensureSkiaSurface(int width, int height);
 
   /**
    * To be able to use static contexts (and avoid reloading the skia context for
