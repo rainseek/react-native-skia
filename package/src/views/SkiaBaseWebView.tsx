@@ -46,8 +46,8 @@ export abstract class SkiaBaseWebView<
     // Reset canvas / surface on layout change
     if (this._canvasRef.current) {
       const canvas = this._canvasRef.current;
-      canvas.width = canvas.clientWidth * pd;
-      canvas.height = canvas.clientHeight * pd;
+      canvas.width = width * pd;
+      canvas.height = height * pd;
       const surface = CanvasKit.MakeWebGLCanvasSurface(this._canvasRef.current);
       if (!surface) {
         throw new Error("Could not create surface");
@@ -56,6 +56,14 @@ export abstract class SkiaBaseWebView<
       this._canvas = this._surface.getCanvas();
       this.redraw();
     }
+    // Call onLayout callback if it exists
+    if (this.props.onLayout) {
+      this.props.onLayout(evt);
+    }
+  }
+
+  protected getSize() {
+    return { width: this.width, height: this.height };
   }
 
   componentDidMount() {
@@ -98,6 +106,7 @@ export abstract class SkiaBaseWebView<
       if (this._canvas) {
         const touches = [...this._touches];
         this._touches = [];
+        this._canvas!.clear(CanvasKit.TRANSPARENT);
         this.renderInCanvas(this._canvas!, touches);
         this._surface?.ref.flush();
       }

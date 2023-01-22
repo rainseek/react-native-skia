@@ -14,15 +14,16 @@
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdocumentation"
 
-#include <SkDashPathEffect.h>
-#include <SkParsePath.h>
-#include <SkPath.h>
-#include <SkPathOps.h>
-#include <SkPathTypes.h>
-#include <SkString.h>
-#include <SkStrokeRec.h>
-#include <SkTextUtils.h>
-#include <SkTrimPathEffect.h>
+#include "SkDashPathEffect.h"
+#include "SkParsePath.h"
+#include "SkPath.h"
+#include "SkPathEffect.h"
+#include "SkPathOps.h"
+#include "SkPathTypes.h"
+#include "SkString.h"
+#include "SkStrokeRec.h"
+#include "SkTextUtils.h"
+#include "SkTrimPathEffect.h"
 
 #include "JsiSkMatrix.h"
 
@@ -40,8 +41,25 @@ public:
     return jsi::String::createFromUtf8(runtime, "Path");
   }
 
+  JSI_HOST_FUNCTION(addPath) {
+    auto src = JsiSkPath::fromValue(runtime, arguments[0]);
+    auto matrix =
+        count > 1 && !arguments[1].isUndefined() && !arguments[1].isNull()
+            ? JsiSkMatrix::fromValue(runtime, arguments[1])
+            : nullptr;
+    auto mode = count > 2 && arguments[2].isBool() && arguments[2].getBool()
+                    ? SkPath::kExtend_AddPathMode
+                    : SkPath::kAppend_AddPathMode;
+    if (matrix == nullptr) {
+      getObject()->addPath(*src, mode);
+    } else {
+      getObject()->addPath(*src, *matrix, mode);
+    }
+    return thisValue.getObject(runtime);
+  }
+
   JSI_HOST_FUNCTION(addArc) {
-    auto rect = JsiSkRect::fromValue(runtime, arguments[0]).get();
+    auto rect = JsiSkRect::fromValue(runtime, arguments[0]);
     auto start = arguments[1].asNumber();
     auto sweep = arguments[2].asNumber();
     getObject()->addArc(*rect, start, sweep);
@@ -49,7 +67,7 @@ public:
   }
 
   JSI_HOST_FUNCTION(addOval) {
-    auto rect = JsiSkRect::fromValue(runtime, arguments[0]).get();
+    auto rect = JsiSkRect::fromValue(runtime, arguments[0]);
     auto direction = SkPathDirection::kCW;
     if (count >= 2 && arguments[1].getBool()) {
       direction = SkPathDirection::kCCW;
@@ -75,7 +93,7 @@ public:
   }
 
   JSI_HOST_FUNCTION(addRect) {
-    auto rect = JsiSkRect::fromValue(runtime, arguments[0]).get();
+    auto rect = JsiSkRect::fromValue(runtime, arguments[0]);
     auto direction = SkPathDirection::kCW;
     if (count >= 2 && arguments[1].getBool()) {
       direction = SkPathDirection::kCCW;
@@ -85,7 +103,7 @@ public:
   }
 
   JSI_HOST_FUNCTION(addRRect) {
-    auto rrect = JsiSkRRect::fromValue(runtime, arguments[0]).get();
+    auto rrect = JsiSkRRect::fromValue(runtime, arguments[0]);
     auto direction = SkPathDirection::kCW;
     if (count >= 2 && arguments[1].getBool()) {
       direction = SkPathDirection::kCCW;
@@ -95,7 +113,7 @@ public:
   }
 
   JSI_HOST_FUNCTION(arcToOval) {
-    auto rect = JsiSkRect::fromValue(runtime, arguments[0]).get();
+    auto rect = JsiSkRect::fromValue(runtime, arguments[0]);
     auto start = arguments[1].asNumber();
     auto sweep = arguments[2].asNumber();
     auto forceMoveTo = arguments[3].getBool();
@@ -511,9 +529,9 @@ public:
   JSI_EXPORT_PROPERTY_GETTERS(JSI_EXPORT_PROP_GET(JsiSkPath, __typename__))
 
   JSI_EXPORT_FUNCTIONS(
-      JSI_EXPORT_FUNC(JsiSkPath, addArc), JSI_EXPORT_FUNC(JsiSkPath, addOval),
-      JSI_EXPORT_FUNC(JsiSkPath, addPoly), JSI_EXPORT_FUNC(JsiSkPath, addRect),
-      JSI_EXPORT_FUNC(JsiSkPath, addRRect),
+      JSI_EXPORT_FUNC(JsiSkPath, addPath), JSI_EXPORT_FUNC(JsiSkPath, addArc),
+      JSI_EXPORT_FUNC(JsiSkPath, addOval), JSI_EXPORT_FUNC(JsiSkPath, addPoly),
+      JSI_EXPORT_FUNC(JsiSkPath, addRect), JSI_EXPORT_FUNC(JsiSkPath, addRRect),
       JSI_EXPORT_FUNC(JsiSkPath, arcToOval),
       JSI_EXPORT_FUNC(JsiSkPath, arcToRotated),
       JSI_EXPORT_FUNC(JsiSkPath, rArcTo),

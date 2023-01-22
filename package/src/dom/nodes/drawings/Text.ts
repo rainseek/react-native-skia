@@ -5,6 +5,8 @@ import {
   DecorationStyle,
   FontStyle,
   TextBaseline,
+  SkRSXform,
+  SkTextBlob,
 } from "../../../skia/types";
 import type {
   ParagraphStyle,
@@ -16,6 +18,7 @@ import type {
 import type {
   DrawingContext,
   SpanProps,
+  TextPathProps,
   TextProps,
   TextStyleProps,
 } from "../../types";
@@ -23,7 +26,7 @@ import { DeclarationType, NodeType } from "../../types";
 import { JsiDrawingNode } from "../DrawingNode";
 import type { NodeContext } from "../Node";
 import { JsiDeclarationNode } from "../Node";
-import { enumKey } from "../datatypes";
+import { enumKey, processPath } from "../datatypes";
 
 const addTextStyleProp = <K extends keyof TextStyle>(
   style: TextStyle,
@@ -177,6 +180,54 @@ export class TextNode extends JsiDrawingNode<TextProps, ParagraphStyle> {
     const paragraph = builder.build();
     paragraph.layout(width);
     canvas.drawParagraph(paragraph, x, y);
+  }
+}
+
+export class TextPathNode extends JsiDrawingNode<TextPathProps, SkTextBlob> {
+  constructor(ctx: NodeContext, props: TextPathProps) {
+    super(ctx, NodeType.TextPath, props);
+  }
+
+  deriveProps() {
+    const path = processPath(this.Skia, this.props.path);
+    const { font, initialOffset } = this.props;
+    let { text } = this.props;
+    const ids = font.getGlyphIDs(text);
+    const widths = font.getGlyphWidths(ids);
+    const rsx: SkRSXform[] = [];
+    const meas = this.Skia.ContourMeasureIter(path, false, 1);
+    let cont = meas.next();
+    let dist = initialOffset;
+    for (let i = 0; i < text.length && cont; i++) {
+      const width = widths[i];
+      dist += width / 2;
+      if (dist > cont.length()) {
+        // jump to next contour
+        cont = meas.next();
+        if (!cont) {
+          // We have come to the end of the path - terminate the string
+          // right here.
+          text = text.substring(0, i);
+          break;
+        }
+        dist = width / 2;
+      }
+      // Gives us the (x, y) coordinates as well as the cos/sin of the tangent
+      // line at that position.
+      const [p, t] = cont.getPosTan(dist);
+      const adjustedX = p.x - (width / 2) * t.x;
+      const adjustedY = p.y - (width / 2) * t.y;
+      rsx.push(this.Skia.RSXform(t.x, t.y, adjustedX, adjustedY));
+      dist += width / 2;
+    }
+    return this.Skia.TextBlob.MakeFromRSXform(text, rsx, font);
+  }
+
+  draw({ canvas, paint }: DrawingContext) {
+    if (!this.derived) {
+      throw new Error("TextPathNode: blob is null");
+    }
+    canvas.drawTextBlob(this.derived, 0, 0, paint);
   }
 }
 

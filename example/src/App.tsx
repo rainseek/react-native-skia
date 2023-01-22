@@ -4,6 +4,7 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { StatusBar } from "react-native";
 import type { HeaderBackButtonProps } from "@react-navigation/elements";
 import { HeaderBackButton } from "@react-navigation/elements";
+import { FiberProvider } from "its-fine";
 
 import {
   AnimationExample,
@@ -23,9 +24,10 @@ import {
   Wallet,
   Severance,
 } from "./Examples";
-import { Tests } from "./Tests";
+import { CI, Tests } from "./Tests";
 import { HomeScreen } from "./Home";
 import type { StackParamList } from "./types";
+import { useAssets } from "./Tests/useAssets";
 
 const linking = {
   config: {
@@ -71,25 +73,37 @@ const HeaderLeft = (props: HeaderBackButtonProps) => {
 
 const App = () => {
   const Stack = createNativeStackNavigator<StackParamList>();
+  const assets = useAssets();
+  if (assets === null) {
+    return null;
+  }
+  const Home = (
+    <Stack.Screen
+      name="Home"
+      key="Home"
+      component={HomeScreen}
+      options={{
+        title: "🎨 Skia",
+      }}
+    />
+  );
+  const E2ETests = (
+    <Stack.Screen
+      key="Tests"
+      name="Tests"
+      options={{
+        title: "🔧 Tests",
+      }}
+    >
+      {(props) => <Tests {...props} assets={assets} />}
+    </Stack.Screen>
+  );
   return (
-    <>
+    <FiberProvider>
       <StatusBar hidden />
       <NavigationContainer linking={linking}>
         <Stack.Navigator screenOptions={{ headerLeft: HeaderLeft }}>
-          <Stack.Screen
-            name="Home"
-            component={HomeScreen}
-            options={{
-              title: "🎨 Skia",
-            }}
-          />
-          <Stack.Screen
-            name="Tests"
-            component={Tests}
-            options={{
-              title: "🔧 Tests",
-            }}
-          />
+          {CI ? [E2ETests, Home] : [Home, E2ETests]}
           <Stack.Screen
             name="Vertices"
             component={Vertices}
@@ -150,7 +164,7 @@ const App = () => {
           <Stack.Screen name="Performance" component={PerformanceDrawingTest} />
         </Stack.Navigator>
       </NavigationContainer>
-    </>
+    </FiberProvider>
   );
 };
 

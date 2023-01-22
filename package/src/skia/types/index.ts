@@ -28,3 +28,4 @@ export * from "./TextBlob";
 export * from "./Paragraph";
 export * from "./Typeface";
 export * from "./TypefaceFontProvider";
+export * from "./Size";

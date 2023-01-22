@@ -15,7 +15,7 @@ import type {
   RuntimeShaderImageFilterProps,
 } from "../../types";
 import { DeclarationType, NodeType } from "../../types";
-import { processRadius, enumKey, processColor } from "../datatypes";
+import { processRadius, enumKey } from "../datatypes";
 import type { NodeContext } from "../Node";
 import { JsiDeclarationNode } from "../Node";
 
@@ -140,12 +140,12 @@ export class BlurImageFilterNode extends ImageFilterDeclaration<BlurImageFilterP
 
 export class DropShadowImageFilterNode extends ImageFilterDeclaration<DropShadowImageFilterProps> {
   constructor(ctx: NodeContext, props: DropShadowImageFilterProps) {
-    super(ctx, NodeType.BlurImageFilter, props);
+    super(ctx, NodeType.DropShadowImageFilter, props);
   }
 
   materialize() {
     const { dx, dy, blur, shadowOnly, color: cl, inner } = this.props;
-    const color = processColor(this.Skia, cl, 1);
+    const color = this.Skia.Color(cl);
     const input = this.getOptionalChildInstance(0);
     let factory;
     if (inner) {

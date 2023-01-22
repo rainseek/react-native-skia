@@ -15,13 +15,14 @@ Behind the scenes, it is using its own React renderer.
 | ref?   | `Ref<SkiaView>` | Reference to the `SkiaView` object |
 | mode?   | `default` or `continuous` | By default, the canvas is only updated when the drawing tree or animation values change. With `mode="continuous"`, the canvas will redraw on every frame |
 | onTouch?    | `TouchHandler` | Touch handler for the Canvas (see [touch handler](/docs/animations/touch-events#usetouchhandler)) |
+| onSize? | `SkiaMutableValue<Size>` | Skia value to which the canvas size will be assigned  (see [canvas size](/docs/animations/values#canvas-size)) |
 | onLayout? | `NativeEvent<LayoutEvent>` | Invoked on mount and on layout changes (see [onLayout](https://reactnative.dev/docs/view#onlayout)) |
 
 ## Getting the Canvas size
 
 If the size of the Canvas is unknown, there are two ways to access it:
-  * **In React components**, using the [`onLayout`](https://reactnative.dev/docs/view#onlayout) prop like you would on any regular React Native View. 
-  * **In Skia animations**, using [`useCanvas()`](/docs/animations/values#canvas).
+  * **In React components**, using the [`onLayout`](https://reactnative.dev/docs/view#onlayout) prop, like you would on any regular React Native View. 
+  * **In Skia animations**, using the [`onSize`](/docs/animations/values#canvas-size) prop.
 
 ## Getting a Canvas Snapshot
 

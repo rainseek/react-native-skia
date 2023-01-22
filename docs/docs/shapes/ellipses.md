@@ -13,7 +13,7 @@ Draws a circle.
 |:-----|:---------|:-----------------|
 | cx   | `number` | Start point.     |
 | cy   | `number` | End point.       |
-| r    | `number` | End point.       |
+| r    | `number` | Radius.          |
 
 ```tsx twoslash
 import {Canvas, Circle} from "@shopify/react-native-skia";
@@ -39,7 +39,7 @@ Draws an oval based on its bounding rectangle.
 |:-------|:---------|:--------------------------------------------|
 | x      | `number` | X coordinate of the bounding rectangle.     |
 | y      | `number` | Y coordinate of the bounding rectangle.     |
-| width  | `number` | Width of the bounding rectangle. rectangle. |
+| width  | `number` | Width of the bounding rectangle.            |
 | height | `number` | Height of the bounding rectangle.           |
 
 

@@ -1,5 +1,6 @@
 /*global NodeJS*/
 import type { HostConfig } from "react-reconciler";
+import { DefaultEventPriority } from "react-reconciler/constants";
 
 import type { Node } from "../dom/types";
 import { NodeType } from "../dom/types";
@@ -68,7 +69,6 @@ export const skHostConfig: SkiaHostConfig = {
    * This function is used by the reconciler in order to calculate current time for prioritising work.
    */
   now: Date.now,
-
   supportsMutation: true,
   isPrimaryRenderer: false,
   supportsPersistence: false,
@@ -229,6 +229,13 @@ export const skHostConfig: SkiaHostConfig = {
   insertBefore: (parent, child, before) => {
     insertBefore(parent, child, before);
   },
+  // see https://github.com/pmndrs/react-three-fiber/pull/2360#discussion_r916356874
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-expect-error
+  getCurrentEventPriority: () => DefaultEventPriority,
+  beforeActiveInstanceBlur: () => {},
+  afterActiveInstanceBlur: () => {},
+  detachDeletedInstance: () => {},
 };
 
 const materialize = <P>(props: AnimatedProps<P>) => {

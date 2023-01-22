@@ -14,7 +14,7 @@
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdocumentation"
 
-#include <SkStream.h>
+#include "SkStream.h"
 
 #pragma clang diagnostic pop
 
@@ -178,18 +178,16 @@ public:
     if (!_isValid) {
       return;
     }
-    std::unordered_map<size_t, std::function<void(bool)>> tmp;
-    {
-      std::lock_guard<std::mutex> lock(_drawCallbacksLock);
-      tmp.insert(_drawCallbacks.cbegin(), _drawCallbacks.cend());
-    }
-    for (auto it = tmp.begin(); it != tmp.end(); it++) {
+    std::lock_guard<std::mutex> lock(_drawCallbacksLock);
+    for (auto it = _drawCallbacks.begin(); it != _drawCallbacks.end(); it++) {
       it->second(invalidated);
     }
   }
 
-  virtual void startDrawLoop() = 0;
-  virtual void stopDrawLoop() = 0;
+  // default implementation does nothing, so it can be called from virtual
+  // destructor.
+  virtual void startDrawLoop() {}
+  virtual void stopDrawLoop() {}
 
 private:
   float _pixelDensity;
