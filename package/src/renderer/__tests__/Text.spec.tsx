@@ -18,6 +18,7 @@ describe("Text", () => {
           fontSize={128}
         >
           Hello
+          {"\n"}
           <Span color="blue" fontSize={256}>
             World
           </Span>

@@ -14,7 +14,7 @@ import {
   Offset,
   RoundedRect,
   Shadow,
-  Text,
+  SimpleText,
 } from "../../components";
 
 describe("Test Image Filters", () => {
@@ -27,7 +27,7 @@ describe("Test Image Filters", () => {
       const image = await surface.draw(
         <>
           <Fill color="white" />
-          <Text text="Hello World" x={x} y={x} font={font} />
+          <SimpleText text="Hello World" x={x} y={x} font={font} />
         </>
       );
       checkImage(image, docPath("image-filters/regular-text.png"));
@@ -43,13 +43,13 @@ describe("Test Image Filters", () => {
     const image = await surface.draw(
       <>
         <Fill color="white" />
-        <Text text="Hello World" x={x} y={y} font={font} />
-        <Text text="Hello World" x={x} y={y1} font={font}>
+        <SimpleText text="Hello World" x={x} y={y} font={font} />
+        <SimpleText text="Hello World" x={x} y={y1} font={font}>
           <Morphology radius={1} />
-        </Text>
-        <Text text="Hello World" x={x} y={y2} font={font}>
+        </SimpleText>
+        <SimpleText text="Hello World" x={x} y={y2} font={font}>
           <Morphology radius={0.3} operator="erode" />
-        </Text>
+        </SimpleText>
       </>
     );
     checkImage(image, docPath("image-filters/morphology.png"));
